@@ -40,17 +40,16 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 <button id="deleteTask" type="button" class="btn btn-danger">Delete Task</button>
-                <button id="saveTask" type="button" class="btn btn-primary">Save changes</button>
+                <button id="saveTask" type="button" class="btn btn-primary">Save Changes</button>
             </div>
         </div>
     </div>
 </div>
 
-
+<!-- TaskList -->
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-3">
-
         </div>
         <div class="col-md-6">
             <h2 class="page-header">Task List</h2>
@@ -59,11 +58,10 @@
                 Add Task
             </button>
             <div id="TaskList" class="list-group">
-                <!-- Assignment: These are simply dummy tasks to show how it should look and work. You need to dynamically update this list with actual tasks -->
+                <!-- Div where tasks will be listed -->
             </div>
         </div>
         <div class="col-md-3">
-
         </div>
     </div>
 </div>
@@ -77,32 +75,74 @@
         var modal = $(this);
         if (triggerElement.attr("id") == 'newTask') {
             modal.find('.modal-title').text('New Task');
+            // Assign dummy text to modal inputs
+            $('#InputTaskName').val("Task Name");
+            $('#InputTaskDescription').val("Task Description");
             $('#deleteTask').hide();
-            currentTaskId = -1;
-        } else {
-            modal.find('.modal-title').text('Task details');
-            $('#deleteTask').show();
+            // Mark to get unique Id
+            currentTaskId = "newTask";
+        }
+        else {
+            modal.find('.modal-title').text('Task Details');
+            // Get clicked task details
             currentTaskId = triggerElement.attr("id");
-            console.log('Task ID: '+triggerElement.attr("id"));
+            currentTaskName = $('#'+currentTaskId+' > h4:first').text();
+            currentTaskDesc = $('#'+currentTaskId+' > p:first').text();
+            // Assign clicked task details to modal
+            $('#InputTaskName').val(currentTaskName);
+            $('#InputTaskDescription').val(currentTaskDesc);
+            $('#deleteTask').show();
         }
     });
+    // Save button clicked
     $('#saveTask').click(function() {
-        //Assignment: Implement this functionality
-        alert('Save... Id:'+currentTaskId);
+        // Get modified modal values
+        newTaskName = $('#InputTaskName').val();
+        newTaskDesc = $('#InputTaskDescription').val();
         $('#myModal').modal('hide');
+        console.log('Saving: '+newTaskName);
+        // Create post data
+        taskData = {Action: "saveTask",
+                    TaskId: currentTaskId,
+                    TaskName: newTaskName,
+                    TaskDescription: newTaskDesc};
+        // Post data and display result
+        $.post("update_task.php", taskData, function(data) {
+            if (data) {
+                console.log('An error occurred while saving: '+data);
+            }
+            else {
+                console.log('Saved: '+data);
+            }
+        });
+        // Refresh TaskList
         updateTaskList();
     });
+    // Delete button clicked
     $('#deleteTask').click(function() {
-        //Assignment: Implement this functionality
-        alert('Delete... Id:'+currentTaskId);
         $('#myModal').modal('hide');
+        console.log('Deleting: '+currentTaskId);
+        // Create post data
+        taskData = {Action: "deleteTask",
+                    TaskId: currentTaskId};
+        // Post data and display result
+        $.post("update_task.php", taskData, function(data) {
+            if (data) {
+                console.log('An error occurred while deleting: '+data);
+            }
+            else {
+                console.log('Deleted: '+data);
+            }
+        });
+        // Refresh TaskList
         updateTaskList();
     });
     function updateTaskList() {
-        $.post("list_tasks.php", function( data ) {
-            $( "#TaskList" ).html( data );
+        $.post("list_tasks.php", function(data) {
+            $("#TaskList").html(data);
         });
     }
+    // Refresh TaskList
     updateTaskList();
 </script>
 </html>
